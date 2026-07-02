@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ candidate.name }} - Candidate Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Header Navigation -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <a href="{{ url_for('main.results') }}" class="btn btn-premium-outline btn-sm mb-2"><i class="bi bi-arrow-left"></i> Back to Shortlist</a>
+            <h1 class="page-title mb-0">{{ candidate.name }} <code class="fs-4 text-muted">[{{ candidate.candidate_id }}]</code></h1>
+        </div>
+        <div class="text-end">
+            <span class="badge-rec badge-{{ evaluation.recommendation.replace(' ', '-').lower() }} px-4 py-3 fs-5 mb-2 d-block">
+                {{ evaluation.recommendation }}
+            </span>
+            <div class="text-muted small">Evaluated on {{ evaluation.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column: Profile Summary & Timeline -->
+        <div class="col-lg-7">
+            <!-- AI Explanation & Highlights -->
+            <div class="glass-card mb-4">
+                <h4 class="mb-3 text-accent"><i class="bi bi-cpu-fill"></i> AI Evaluation & Fit Reasoning</h4>
+                <p class="text-white fs-6" style="line-height: 1.6;">
+                    {{ explanation.get('text', 'No explanation generated.') }}
+                </p>
+                
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25 h-100">
+                            <h6 class="text-success mb-2 fw-bold"><i class="bi bi-plus-circle-fill"></i> Key Strengths</h6>
+                            <ul class="list-unstyled small mb-0 d-flex flex-column gap-2 text-muted">
+                                {% for strg in explanation.get('strengths', []) %}
+                                    <li class="d-flex gap-2 align-items-start">
+                                        <i class="bi bi-check-lg text-success mt-1"></i>
+                                        <span>{{ strg }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="text-muted">No specific strengths highlighted.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 h-100">
+                            <h6 class="text-danger mb-2 fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Areas of Concern / Gaps</h6>
+                            <ul class="list-unstyled small mb-0 d-flex flex-column gap-2 text-muted">
+                                {% for gap in explanation.get('gaps', []) %}
+                                    <li class="d-flex gap-2 align-items-start">
+                                        <i class="bi bi-x-circle-fill text-danger mt-1"></i>
+                                        <span>{{ gap }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="text-muted text-success-emphasis"><i class="bi bi-shield-check text-success"></i> No critical alignment gaps.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Career Timeline -->
+            <div class="glass-card mb-4">
+                <h4 class="mb-4 text-white"><i class="bi bi-briefcase-fill text-primary"></i> Work Experience Timeline</h4>
+                {% if career %}
+                    <div class="timeline ps-2">
+                        {% for job in career %}
+                            <div class="timeline-item">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <h5 class="mb-0 text-white">{{ job.get('title') }}</h5>
+                                    <span class="badge bg-dark border border-light border-opacity-10 text-muted px-2 py-1 small">
+                                        {{ job.get('start_date') }} to {{ job.get('end_date') or 'Present' }}
+                                    </span>
+                                </div>
+                                <div class="fw-bold text-accent mb-2">{{ job.get('company') }} <span class="text-muted small">({{ job.get('duration_months', 0) }} Months)</span></div>
+                                <p class="text-muted small mb-0">{{ job.get('description', '') }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No career history records found.</p>
+                {% endif %}
+            </div>
+
+            <!-- Education & Certifications -->
+            <div class="glass-card">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h4 class="mb-3 text-white"><i class="bi bi-mortarboard-fill text-warning"></i> Education</h4>
+                        {% for edu in education %}
+                            <div class="mb-3 p-3 rounded-3 bg-dark bg-opacity-25 border border-light border-opacity-10">
+                                <div class="fw-bold text-white">{{ edu.get('degree') }} in {{ edu.get('field_of_study') }}</div>
+                                <div class="text-muted small">{{ edu.get('institution') }}</div>
+                                <div class="d-flex align-items-center justify-content-between mt-2 text-accent small">
+                                    <span>Class of {{ edu.get('end_year') }}</span>
+                                    <span class="badge bg-secondary">{{ edu.get('tier', 'unknown').upper() }}</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted small mb-0">No education records.</p>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <h4 class="mb-3 text-white"><i class="bi bi-award-fill text-success"></i> Certifications</h4>
+                        {% for cert in certifications %}
+                            <div class="mb-3 p-3 rounded-3 bg-dark bg-opacity-25 border border-light border-opacity-10">
+                                <div class="fw-bold text-white">{{ cert.get('name') }}</div>
+                                <div class="text-muted small">{{ cert.get('issuer') }} <span class="float-end text-accent">Year: {{ cert.get('year') }}</span></div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted small mb-0">No certifications listed.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Visual Radar Chart & Scores & Platform Signals -->
+        <div class="col-lg-5">
+            <!-- Overall Score Circle Gauge -->
+            <div class="glass-card mb-4 text-center">
+                <div class="text-muted small fw-bold text-uppercase mb-2">Overall Match Score</div>
+                <div class="stat-value text-accent display-3 fw-bold mb-0">{{ evaluation.score_final }}%</div>
+                <div class="text-muted small mt-2">Aggregated from 9 independent quality signals</div>
+            </div>
+
+            <!-- Radar / Spider Chart -->
+            <div class="glass-card mb-4">
+                <h4 class="mb-4 text-white"><i class="bi bi-graph-up text-accent"></i> Signal Distribution Radar</h4>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Detailed Subscores progress list -->
+            <div class="glass-card mb-4">
+                <h4 class="mb-3 text-white"><i class="bi bi-list-stars text-primary"></i> Subscore Breakdown</h4>
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <div class="d-flex justify-content-between text-muted small mb-1">
+                            <span>Semantic Similarity</span>
+                            <span class="text-white fw-bold">{{ evaluation.score_semantic }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px; background: rgba(255,255,255,0.05);">
+                            <div class="progress-bar bg-accent" style="width: {{ evaluation.score_semantic }}%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between text-muted small mb-1">
+                            <span>Tech Skills Coverage</span>
+                            <span class="text-white fw-bold">{{ evaluation.score_skills }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px; background: rgba(255,255,255,0.05);">
+                            <div class="progress-bar bg-info" style="width: {{ evaluation.score_skills }}%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between text-muted small mb-1">
+                            <span>Experience Calibration</span>
+                            <span class="text-white fw-bold">{{ evaluation.score_experience }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px; background: rgba(255,255,255,0.05);">
+                            <div class="progress-bar bg-primary" style="width: {{ evaluation.score_experience }}%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between text-muted small mb-1">
+                            <span>Projects & Code Context</span>
+                            <span class="text-white fw-bold">{{ evaluation.score_projects }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px; background: rgba(255,255,255,0.05);">
+                            <div class="progress-bar bg-warning" style="width: {{ evaluation.score_projects }}%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between text-muted small mb-1">
+                            <span>Career Growth Trajectory</span>
+                            <span class="text-white fw-bold">{{ evaluation.score_career_growth }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px; background: rgba(255,255,255,0.05);">
+                            <div class="progress-bar bg-success" style="width: {{ evaluation.score_career_growth }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Behavioral Telemetry -->
+            <div class="glass-card">
+                <h4 class="mb-3 text-white"><i class="bi bi-activity text-success"></i> Platform Activity & Signals</h4>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="p-2 border border-light border-opacity-10 rounded-3 text-center bg-dark bg-opacity-25">
+                            <div class="text-muted small">Response Rate</div>
+                            <div class="fw-bold text-white mt-1">{{ (signals.get('recruiter_response_rate', 0.8) * 100)|int }}%</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 border border-light border-opacity-10 rounded-3 text-center bg-dark bg-opacity-25">
+                            <div class="text-muted small">GitHub Score</div>
+                            <div class="fw-bold text-white mt-1">
+                                {% if signals.get('github_activity_score', -1) > -1 %}
+                                    {{ signals.get('github_activity_score')|int }}/100
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 border border-light border-opacity-10 rounded-3 text-center bg-dark bg-opacity-25">
+                            <div class="text-muted small">Notice Period</div>
+                            <div class="fw-bold text-white mt-1">{{ signals.get('notice_period_days', 30) }} Days</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 border border-light border-opacity-10 rounded-3 text-center bg-dark bg-opacity-25">
+                            <div class="text-muted small">Expected Salary</div>
+                            <div class="fw-bold text-white mt-1">{{ signals.get('expected_salary_range_inr_lpa', {}).get('min', 15)|int }}-{{ signals.get('expected_salary_range_inr_lpa', {}).get('max', 25)|int }} LPA</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    
+    // Retrieve metrics from Flask context safely
+    const data = {
+        labels: ['Semantic Similarity', 'Tech Skills', 'Experience', 'Projects', 'Education', 'Certifications', 'Career Growth', 'Behavioral Response', 'Platform Activity'],
+        datasets: [{
+            label: 'Applicant Signal',
+            data: [
+                {{ evaluation.score_semantic }},
+                {{ evaluation.score_skills }},
+                {{ evaluation.score_experience }},
+                {{ evaluation.score_projects }},
+                {{ evaluation.score_education }},
+                {{ evaluation.score_certifications }},
+                {{ evaluation.score_career_growth }},
+                {{ evaluation.score_behavior }},
+                {{ evaluation.score_activity }}
+            ],
+            fill: true,
+            backgroundColor: 'rgba(86, 11, 173, 0.15)',
+            borderColor: '#560bad',
+            pointBackgroundColor: '#560bad',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#560bad'
+        }]
+    };
+
+    const radar = new Chart(ctx, {
+        type: 'radar',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            elements: {
+                line: {
+                    borderWidth: 2
+                }
+            },
+            scales: {
+                r: {
+                    angleLines: {
+                        color: 'rgba(0, 0, 0, 0.08)'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.08)'
+                    },
+                    pointLabels: {
+                        color: '#4b5563',
+                        font: {
+                            family: 'Outfit',
+                            size: 10
+                        }
+                    },
+                    ticks: {
+                        color: '#4b5563',
+                        backdropColor: 'transparent',
+                        showLabelBackdrop: false
+                    },
+                    suggestedMin: 0,
+                    suggestedMax: 100
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

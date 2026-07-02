@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Candidates - AI Recruiter{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="page-title mb-0">Candidate Sourcing & Pool Sizing</h1>
+        {% if candidates %}
+            <a href="{{ url_for('main.processing') }}" class="btn btn-premium px-4 py-3">
+                <i class="bi bi-cpu"></i> Proceed to Ranking Pipeline <i class="bi bi-arrow-right"></i>
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Active Job details banner -->
+    <div class="alert bg-dark bg-opacity-25 border border-light border-opacity-10 rounded-3 mb-4 py-3 px-4 d-flex align-items-center justify-content-between">
+        <div>
+            <span class="text-muted small fw-bold text-uppercase d-block mb-1">Target Profile Job Description</span>
+            <span class="fs-5 fw-bold text-white"><i class="bi bi-file-earmark-text-fill text-accent"></i> {{ job.title }}</span>
+        </div>
+        <a href="{{ url_for('main.upload_jd') }}" class="btn btn-premium-outline btn-sm">Change Job</a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Resume Upload Column -->
+        <div class="col-lg-5">
+            <div class="glass-card h-100">
+                <h3 class="mb-3">Source Applicants</h3>
+                <p class="text-muted small mb-4">Upload custom candidate resume PDFs, or load the pre-structured sample candidate pool from the India Runs Challenge dataset.</p>
+                
+                <!-- Quick Import Button for Hackathon -->
+                <div class="mb-4">
+                    <a href="{{ url_for('main.load_sample_pool') }}" class="btn btn-premium-outline w-100 py-3 text-start d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-database-fill-check text-accent fs-5 me-2"></i>
+                            <strong>Load Challenge Sample Pool</strong>
+                            <div class="text-muted small ms-4">Loads prettified profiles from sample_candidates.json</div>
+                        </div>
+                        <i class="bi bi-chevron-right text-accent"></i>
+                    </a>
+                </div>
+
+                <div class="text-center text-muted fw-bold my-3">— OR —</div>
+
+                <!-- PDF Uploader Form -->
+                <form action="{{ url_for('main.upload_resumes') }}" method="POST" enctype="multipart/form-data">
+                    <div id="drag-zone" class="drag-zone mb-4">
+                        <i class="bi bi-cloud-arrow-up-fill"></i>
+                        <h5>Drag & Drop Resume PDFs here</h5>
+                        <p class="text-muted small">or click to browse local files</p>
+                        <input type="file" id="resume-files" name="resume_files" multiple accept=".pdf" class="d-none">
+                    </div>
+
+                    <!-- Selected Files Preview list -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Selected Resumes</label>
+                        <div id="file-list-container" class="border border-light border-opacity-10 rounded-3 p-3 text-center bg-dark bg-opacity-25" style="max-height: 250px; overflow-y: auto;">
+                            <span class="text-muted small">No PDFs selected</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-premium w-100 py-3">
+                        <i class="bi bi-file-earmark-arrow-up-fill"></i> Parse & Load PDFs
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Current Pool List Column -->
+        <div class="col-lg-7">
+            <div class="glass-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h3 class="mb-0">Candidate Pool ({{ candidates|length }})</h3>
+                    {% if candidates %}
+                        <span class="text-muted small">Ready to rank</span>
+                    {% endif %}
+                </div>
+
+                {% if candidates %}
+                    <div class="premium-table-container" style="max-height: 520px; overflow-y: auto;">
+                        <table class="premium-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidate Name</th>
+                                    <th>Candidate ID</th>
+                                    <th>Location</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cand in candidates %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-white">{{ cand.name }}</div>
+                                            <span class="text-muted small">{{ cand.email or 'N/A' }}</span>
+                                        </td>
+                                        <td><code>{{ cand.candidate_id or 'N/A' }}</code></td>
+                                        <td><span class="small text-muted">{{ cand.location or 'Unknown' }}</span></td>
+                                        <td class="text-center">
+                                            <a href="{{ url_for('main.delete_candidate', id=cand.id) }}" class="text-danger fs-5" title="Remove candidate">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-people-fill text-muted" style="font-size: 5rem; opacity: 0.3;"></i>
+                        <p class="text-muted mt-3">The candidate pool is currently empty. Upload PDF resumes or load the Challenge Sample Pool using the controls on the left.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

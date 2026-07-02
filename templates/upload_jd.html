@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Job Description - AI Recruiter{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="page-title mb-0">Job Description Parser</h1>
+        {% if job %}
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
+                    <i class="bi bi-check-circle-fill"></i> Active Job: {{ job.title }}
+                </span>
+                <a href="{{ url_for('main.reset_jd') }}" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 fw-semibold">
+                    <i class="bi bi-trash-fill"></i> Reset Database
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="row g-4">
+        <!-- Upload Form -->
+        <div class="col-lg-5">
+            <div class="glass-card h-100">
+                <h3 class="mb-4">Load Job Description</h3>
+                <form action="{{ url_for('main.upload_jd') }}" method="POST" enctype="multipart/form-data">
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Option 1: Paste Job Description Text</label>
+                        <textarea class="form-control" name="jd_text" rows="12" placeholder="Paste the text of the job description here..."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Option 2: Upload JD PDF File</label>
+                        <input class="form-control" type="file" name="jd_file" accept=".pdf">
+                        <div class="form-text text-muted small">Only .pdf documents are supported.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-premium w-100 py-3">
+                        <i class="bi bi-cpu-fill"></i> Parse & Extract Requirements
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Parsed Requirements Preview -->
+        <div class="col-lg-7">
+            <div class="glass-card h-100">
+                <h3 class="mb-4">Parsed Requirements Preview</h3>
+                {% if job %}
+                    <div class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold text-uppercase d-block mb-1">Role Title</label>
+                                <div class="fs-5 fw-bold text-white">{{ job.title }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold text-uppercase d-block mb-1">Target Location</label>
+                                <div class="fs-6 fw-bold text-white"><i class="bi bi-geo-alt-fill text-danger"></i> {{ job.location }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold text-uppercase d-block mb-1">Required Experience</label>
+                                <div class="fs-6 text-white"><i class="bi bi-calendar-event text-accent"></i> {{ job.experience_required }} - 9 Years</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold text-uppercase d-block mb-1">Seniority Bracket</label>
+                                <div class="fs-6 text-white"><i class="bi bi-person-workspace text-primary"></i> {{ job.seniority }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-light border-opacity-10 my-4">
+
+                    <div class="mb-4">
+                        <h5 class="text-accent mb-3">Extracted Core Technologies</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for skill in job.get_skills() %}
+                                <span class="badge bg-dark bg-opacity-50 text-white border border-light border-opacity-10 px-3 py-2 fs-6 rounded-3">
+                                    {{ skill }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">No specific tech skills extracted.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <hr class="border-light border-opacity-10 my-4">
+
+                    {% set data = job.get_parsed_data() %}
+                    {% if data %}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h5 class="text-white mb-2"><i class="bi bi-list-task text-primary"></i> Responsibilities</h5>
+                                <ul class="list-unstyled text-muted small d-flex flex-column gap-2">
+                                    {% for resp in data.get('responsibilities', []) %}
+                                        <li class="d-flex gap-2 align-items-start">
+                                            <i class="bi bi-chevron-right text-accent mt-1"></i>
+                                            <span>{{ resp }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-white mb-2"><i class="bi bi-chat-left-heart-fill text-warning"></i> Preferred Attributes</h5>
+                                <ul class="list-unstyled text-muted small d-flex flex-column gap-2">
+                                    {% for skill in data.get('soft_skills', []) %}
+                                        <li class="d-flex gap-2 align-items-start">
+                                            <i class="bi bi-chevron-right text-accent mt-1"></i>
+                                            <span>{{ skill }}</span>
+                                        </li>
+                                    {% endfor %}
+                                    <li class="d-flex gap-2 align-items-start">
+                                        <i class="bi bi-chevron-right text-accent mt-1"></i>
+                                        <span>{{ data.get('education', 'Relevant degree') }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-file-earmark-lock-fill text-muted" style="font-size: 5rem; opacity: 0.3;"></i>
+                        <p class="text-muted mt-3">No active job description loaded. Paste or upload a job description on the left to initialize the parser.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

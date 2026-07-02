@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Recruiter - Intelligent Candidate Ranking System{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Hero Banner Segment -->
+    <div class="row align-items-center mb-5 py-4">
+        <div class="col-lg-7">
+            <h1 class="display-4 fw-extrabold mb-3" style="background: linear-gradient(135deg, #ffffff 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">
+                Next-Gen Candidate Sourcing & Semantic Ranking
+            </h1>
+            <p class="lead text-muted mb-4 fs-5" style="line-height: 1.6;">
+                Evaluate candidates using deep semantic models, multi-signal scoring (experience, certifications, career progression), and behavioral response rates. Filter honeypots automatically and explain every hire decision.
+            </p>
+            <div class="d-flex gap-3">
+                <a href="{{ url_for('main.upload_jd') }}" class="btn btn-premium btn-lg px-4 py-3">
+                    <i class="bi bi-rocket-takeoff-fill"></i> Get Started
+                </a>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-premium-outline btn-lg px-4 py-3">
+                    <i class="bi bi-graph-up-arrow"></i> View Analytics
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-5 d-none d-lg-block text-center position-relative">
+            <!-- Simulated AI Network Visual Glow -->
+            <div class="position-absolute top-50 left-50 translate-middle rounded-circle bg-primary bg-opacity-25" style="width: 300px; height: 300px; filter: blur(50px); z-index: -1;"></div>
+            <i class="bi bi-cpu text-accent" style="font-size: 15rem; filter: drop-shadow(0 0 25px var(--accent-glow));"></i>
+        </div>
+    </div>
+
+    <!-- Active Telemetry Metric Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="glass-card text-center py-4">
+                <div class="stat-value text-accent mb-2">{{ jd_count }}</div>
+                <div class="text-muted fw-bold text-uppercase small">Active Job Descriptions</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card text-center py-4">
+                <div class="stat-value text-primary mb-2">{{ candidate_count }}</div>
+                <div class="text-muted fw-bold text-uppercase small">Total Candidate Profiles</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card text-center py-4">
+                <div class="stat-value text-success mb-2">{{ eval_count }}</div>
+                <div class="text-muted fw-bold text-uppercase small">Evaluations Completed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Navigation Steps -->
+    <h2 class="mb-4">System Pipelines</h2>
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card h-100 d-flex flex-column">
+                <div class="mb-3 text-accent"><i class="bi bi-file-earmark-text-fill fs-1"></i></div>
+                <h4 class="mb-2">1. Upload JD</h4>
+                <p class="text-muted small flex-grow-1">Provide a job description document (PDF or text). The system parses experience requirements, core skills, seniority, and hidden signals.</p>
+                <a href="{{ url_for('main.upload_jd') }}" class="btn btn-premium-outline btn-sm w-100 mt-3">Upload JD</a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card h-100 d-flex flex-column">
+                <div class="mb-3 text-primary"><i class="bi bi-people-fill fs-1"></i></div>
+                <h4 class="mb-2">2. Sourcing Pool</h4>
+                <p class="text-muted small flex-grow-1">Upload resumes (PDFs) or load candidates from the challenge pool. Structured schemas and contact profiles are parsed instantly.</p>
+                <a href="{{ url_for('main.upload_resumes') }}" class="btn btn-premium-outline btn-sm w-100 mt-3">Source Candidates</a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card h-100 d-flex flex-column">
+                <div class="mb-3 text-warning"><i class="bi bi-cpu-fill fs-1"></i></div>
+                <h4 class="mb-2">3. Rank Candidates</h4>
+                <p class="text-muted small flex-grow-1">Executes the 9-signal ranking algorithm. Measures semantic matches, filters out honeypots, and determines fit tiers.</p>
+                <a href="{{ url_for('main.processing') }}" class="btn btn-premium-outline btn-sm w-100 mt-3">Run Ranker</a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card h-100 d-flex flex-column">
+                <div class="mb-3 text-success"><i class="bi bi-graph-up-arrow fs-1"></i></div>
+                <h4 class="mb-2">4. Analytics</h4>
+                <p class="text-muted small flex-grow-1">Inspect candidate summaries, radar score charts, strengths/gaps list, and download custom formatted Excel shortlists.</p>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-premium-outline btn-sm w-100 mt-3">View Dashboards</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="glass-card p-4">
+        <h3 class="mb-3"><i class="bi bi-patch-check-fill text-accent"></i> Core Platform Features</h3>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <ul class="list-unstyled d-flex flex-column gap-3">
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check2-circle text-accent fs-5 mt-1"></i>
+                        <div>
+                            <strong>Synonym-Aware Skill Matching:</strong>
+                            <p class="text-muted small mb-0">Recognizes that 'AWS' is 'Amazon Web Services' and matches variations intelligently instead of doing pure substring matches.</p>
+                        </div>
+                    </li>
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check2-circle text-accent fs-5 mt-1"></i>
+                        <div>
+                            <strong>Honeypot Validation Layer:</strong>
+                            <p class="text-muted small mb-0">Guards the pipeline from fake/impossible candidate profiles (expert in 10 skills with 0 months experience) by flagging anomalies immediately.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul class="list-unstyled d-flex flex-column gap-3">
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check2-circle text-accent fs-5 mt-1"></i>
+                        <div>
+                            <strong>Two-Stage Retrieve & Rank:</strong>
+                            <p class="text-muted small mb-0">Implements a lightning-fast pre-screening filter to drop the candidate pool from 100,000 to the top 2,000 before running full ML encoding, keeping execution times under 3 minutes.</p>
+                        </div>
+                    </li>
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check2-circle text-accent fs-5 mt-1"></i>
+                        <div>
+                            <strong>Explainable AI scoring:</strong>
+                            <p class="text-muted small mb-0">Fills out structural reasons, strength highlights, and gaps. Generates the 1-2 sentence reasoning required for recruitment shortlists.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

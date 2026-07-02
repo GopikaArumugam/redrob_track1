@@ -1,0 +1,36 @@
+# Exclude large dataset files
+candidates.jsonl
+dataandai/India_runs_data_and_ai_challenge/candidates.jsonl
+
+# Exclude local SQLite databases
+database.db
+instance/
+*.db
+
+# Exclude Python bytecode and cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Exclude virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Exclude IDE settings
+.vscode/
+.idea/
+
+# Exclude generated submission and test reports
+submission.csv
+your_team_name.csv
+test_export.xlsx
+ranked_candidates.xlsx
+*.xlsx
+*.csv
+
+# Exclude local model weights (already cached/referenced locally)
+models/

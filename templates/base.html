@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Recruiter & Intelligent Ranking{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <a href="{{ url_for('main.index') }}" class="sidebar-brand">
+            <i class="bi bi-cpu-fill"></i> AIRecruiter
+        </a>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{{ url_for('main.index') }}" class="sidebar-link {% if request.path == '/' %}active{% endif %}">
+                    <i class="bi bi-house-door-fill"></i> Home
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.upload_jd') }}" class="sidebar-link {% if '/upload_jd' in request.path %}active{% endif %}">
+                    <i class="bi bi-file-earmark-text-fill"></i> Job Description
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.upload_resumes') }}" class="sidebar-link {% if '/upload_resumes' in request.path %}active{% endif %}">
+                    <i class="bi bi-people-fill"></i> Candidates
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.results') }}" class="sidebar-link {% if '/results' in request.path %}active{% endif %}">
+                    <i class="bi bi-trophy-fill"></i> Shortlist Ranks
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.dashboard') }}" class="sidebar-link {% if '/dashboard' in request.path %}active{% endif %}">
+                    <i class="bi bi-graph-up-arrow"></i> Dashboard
+                </a>
+            </li>
+        </ul>
+        
+        <div class="mt-auto pt-3 border-top border-light border-opacity-10 text-center text-muted small">
+            <i class="bi bi-shield-check text-accent"></i> AI Sandbox Active
+        </div>
+    </div>
+
+    <!-- Main Workspace Content Wrapper -->
+    <div class="main-wrapper">
+        <!-- Toast / Alert Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container-fluid px-0 mb-4">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show border border-{{ category }} border-opacity-25 bg-dark bg-opacity-50 text-white rounded-3 shadow-lg" role="alert">
+                            <div class="d-flex align-items-center gap-2">
+                                {% if category == 'success' %}
+                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                {% elif category == 'danger' %}
+                                    <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle-fill text-info fs-5"></i>
+                                {% endif %}
+                                <span>{{ message }}</span>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Content Injection -->
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

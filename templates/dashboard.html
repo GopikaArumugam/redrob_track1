@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Analytics - AI Recruiter{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="page-title mb-1">Global Pool Telemetry</h1>
+            <p class="text-muted mb-0"><i class="bi bi-graph-up-arrow text-accent"></i> Aggregate statistics and distributions for: <strong>{{ job.title }}</strong></p>
+        </div>
+        <a href="{{ url_for('main.results') }}" class="btn btn-premium px-4 py-3">
+            <i class="bi bi-trophy-fill"></i> View Shortlist
+        </a>
+    </div>
+
+    <!-- Stats Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card text-center py-4 h-100">
+                <div class="stat-value text-white">{{ stats.total_candidates }}</div>
+                <div class="text-muted small fw-bold text-uppercase">Resumes Scanned</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center py-4 h-100">
+                <div class="stat-value text-accent">{{ stats.avg_score }}%</div>
+                <div class="text-muted small fw-bold text-uppercase">Average Match Score</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center py-4 h-100">
+                <div class="stat-value text-primary">{{ stats.avg_experience }} Yrs</div>
+                <div class="text-muted small fw-bold text-uppercase">Average Experience</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center py-4 h-100">
+                <div class="stat-value text-success">
+                    {{ stats.reco_counts.get('Strong Hire', 0) + stats.reco_counts.get('Hire', 0) }}
+                </div>
+                <div class="text-muted small fw-bold text-uppercase">Strong Hire / Hires</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Grid Row 1 -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="glass-card">
+                <h4 class="mb-4 text-white"><i class="bi bi-pie-chart-fill text-accent"></i> Recommendation Tiers Distribution</h4>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="recoChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="glass-card">
+                <h4 class="mb-4 text-white"><i class="bi bi-bar-chart-fill text-primary"></i> Score Bracket Frequency</h4>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="scoreChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Grid Row 2 -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="glass-card">
+                <h4 class="mb-4 text-white"><i class="bi bi-tags-fill text-warning"></i> Top 8 Skills in Talent Pool</h4>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="glass-card">
+                <h4 class="mb-4 text-white"><i class="bi bi-calendar-range-fill text-success"></i> Experience Distribution</h4>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="expChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Candidates Quick List -->
+    <div class="glass-card">
+        <h4 class="mb-4 text-white"><i class="bi bi-star-fill text-accent"></i> Top 5 Candidates Summary</h4>
+        {% if stats.top_candidates %}
+            <div class="premium-table-container">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Candidate Name</th>
+                            <th>ID</th>
+                            <th class="text-center">Overall Score</th>
+                            <th class="text-center">Recommendation</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cand in stats.top_candidates %}
+                            <tr>
+                                <td class="fw-bold text-accent">{{ loop.index }}</td>
+                                <td class="fw-bold text-white">{{ cand.name }}</td>
+                                <td><code>{{ cand.candidate_id }}</code></td>
+                                <td class="text-center fw-bold">{{ cand.score }}%</td>
+                                <td class="text-center">
+                                    <span class="badge-rec badge-{{ cand.recommendation.replace(' ', '-').lower() }}">{{ cand.recommendation }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('main.details', candidate_id=cand.candidate_id) }}" class="btn btn-premium-outline btn-sm">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No candidate reports available. Please complete a shortlist analysis first.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Recommendation Distribution Doughnut
+    const recoCtx = document.getElementById('recoChart').getContext('2d');
+    new Chart(recoCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Strong Hire', 'Hire', 'Consider', 'Reject'],
+            datasets: [{
+                data: [
+                    {{ stats.reco_counts.get('Strong Hire', 0) }},
+                    {{ stats.reco_counts.get('Hire', 0) }},
+                    {{ stats.reco_counts.get('Consider', 0) }},
+                    {{ stats.reco_counts.get('Reject', 0) }}
+                ],
+                backgroundColor: ['#10b981', '#34d399', '#f59e0b', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { color: '#4b5563', font: { family: 'Outfit' } }
+                }
+            }
+        }
+    });
+
+    // Score Bracket Frequency Bar Chart
+    const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+    new Chart(scoreCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ stats.score_distribution.labels|tojson }},
+            datasets: [{
+                data: {{ stats.score_distribution.data|tojson }},
+                backgroundColor: 'rgba(86, 11, 173, 0.4)',
+                borderColor: '#560bad',
+                borderWidth: 2,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { color: '#4b5563' } },
+                x: { grid: { display: false }, ticks: { color: '#4b5563' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Skill Frequency Horizontal Bar Chart
+    const skillsCtx = document.getElementById('skillsChart').getContext('2d');
+    const skillNames = [];
+    const skillCounts = [];
+    {% for skill in stats.top_skills %}
+        skillNames.push("{{ skill.name }}");
+        skillCounts.push({{ skill.count }});
+    {% endfor %}
+    
+    new Chart(skillsCtx, {
+        type: 'bar',
+        data: {
+            labels: skillNames,
+            datasets: [{
+                data: skillCounts,
+                backgroundColor: 'rgba(63, 55, 201, 0.4)',
+                borderColor: '#3f37c9',
+                borderWidth: 2,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { color: '#4b5563', stepSize: 1 } },
+                y: { grid: { display: false }, ticks: { color: '#4b5563' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Experience Distribution Line Chart
+    const expCtx = document.getElementById('expChart').getContext('2d');
+    new Chart(expCtx, {
+        type: 'line',
+        data: {
+            labels: {{ stats.exp_distribution.labels|tojson }},
+            datasets: [{
+                data: {{ stats.exp_distribution.data|tojson }},
+                backgroundColor: 'rgba(86, 11, 173, 0.15)',
+                borderColor: '#560bad',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#3f37c9'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { color: '#4b5563', stepSize: 1 } },
+                x: { grid: { display: false }, ticks: { color: '#4b5563' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+});
+</script>
+{% endblock %}

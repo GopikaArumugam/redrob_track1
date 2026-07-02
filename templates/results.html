@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Shortlist Results - AI Recruiter{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="page-title mb-1">Ranked Candidate Shortlist</h1>
+            <p class="text-muted mb-0"><i class="bi bi-award-fill text-accent"></i> Top matches ranked for: <strong>{{ job.title }}</strong></p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('main.download_excel') }}" class="btn btn-premium px-4 py-3">
+                <i class="bi bi-file-earmark-excel-fill"></i> Export Excel
+            </a>
+            <a href="{{ url_for('main.upload_resumes') }}" class="btn btn-premium-outline px-4 py-3">
+                <i class="bi bi-arrow-left"></i> Sourcing Pool
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="glass-card mb-4 p-3">
+        <div class="row g-3">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark bg-opacity-25 border-end-0 border-light border-opacity-10 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" id="search-input" class="form-control border-start-0 ps-0" placeholder="Search by name, ID, or skills...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select id="filter-reco" class="form-select">
+                    <option value="">All Recommendations</option>
+                    <option value="Strong Hire">Strong Hire (>= 85%)</option>
+                    <option value="Hire">Hire (70% - 84%)</option>
+                    <option value="Consider">Consider (50% - 69%)</option>
+                    <option value="Reject">Reject (< 50% / Honeypot)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="sort-order" class="form-select">
+                    <option value="rank-asc">Rank: Low to High</option>
+                    <option value="score-desc">Score: High to Low</option>
+                    <option value="experience-desc">Experience: High to Low</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="glass-card p-0 overflow-hidden">
+        {% if evaluations %}
+            <div class="premium-table-container">
+                <table class="premium-table" id="results-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable text-center" style="width: 80px; cursor: pointer;">Rank <i class="bi bi-chevron-expand"></i></th>
+                            <th>Candidate</th>
+                            <th class="sortable text-center" style="cursor: pointer;">Overall Score <i class="bi bi-chevron-expand"></i></th>
+                            <th class="sortable text-center" style="cursor: pointer;">Semantic Match <i class="bi bi-chevron-expand"></i></th>
+                            <th class="sortable text-center" style="cursor: pointer;">Skills <i class="bi bi-chevron-expand"></i></th>
+                            <th class="sortable text-center" style="cursor: pointer;">Experience <i class="bi bi-chevron-expand"></i></th>
+                            <th class="text-center">Recommendation</th>
+                            <th class="text-center" style="width: 140px;">Report</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-tbody">
+                        {% for eval in evaluations %}
+                            <tr class="candidate-row" data-name="{{ eval.candidate.name|lower }}" data-id="{{ eval.candidate.candidate_id|lower }}" data-skills="{{ eval.candidate.skills|lower }}" data-reco="{{ eval.recommendation }}">
+                                <td class="text-center fw-bold fs-5 text-accent">{{ eval.rank }}</td>
+                                <td>
+                                    <div class="fw-bold text-white fs-6">{{ eval.candidate.name }}</div>
+                                    <code class="text-muted small">{{ eval.candidate.candidate_id }}</code>
+                                </td>
+                                <td class="text-center fw-bold text-white fs-5">{{ eval.score_final }}%</td>
+                                <td class="text-center">
+                                    <span class="score-badge">{{ eval.score_semantic }}%</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="score-badge">{{ eval.score_skills }}%</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="score-badge">{{ eval.score_experience }}%</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge-rec badge-{{ eval.recommendation.replace(' ', '-').lower() }}">
+                                        {{ eval.recommendation }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('main.details', candidate_id=eval.candidate.candidate_id) }}" class="btn btn-premium-outline btn-sm">
+                                        <i class="bi bi-file-earmark-person-fill"></i> View Report
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-trophy text-muted" style="font-size: 5rem; opacity: 0.3;"></i>
+                <p class="text-muted mt-3">No candidates have been evaluated yet. Please load a candidate pool and run the ranking pipeline.</p>
+                <a href="{{ url_for('main.upload_resumes') }}" class="btn btn-premium mt-3">
+                    <i class="bi bi-people-fill"></i> Go to Candidates Pool
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const filterReco = document.getElementById('filter-reco');
+    const sortOrder = document.getElementById('sort-order');
+    const tbody = document.getElementById('results-tbody');
+    
+    if (!tbody) return;
+    
+    const rows = Array.from(tbody.querySelectorAll('.candidate-row'));
+
+    function filterTable() {
+        const query = searchInput.value.toLowerCase().strip();
+        const recoFilter = filterReco.value;
+
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name');
+            const cid = row.getAttribute('data-id');
+            const skills = row.getAttribute('data-skills');
+            const reco = row.getAttribute('data-reco');
+
+            const matchesQuery = !query || name.includes(query) || cid.includes(query) || skills.includes(query);
+            const matchesReco = !recoFilter || reco === recoFilter;
+
+            if (matchesQuery && matchesReco) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterTable);
+    if (filterReco) filterReco.addEventListener('change', filterTable);
+    
+    // Sort ordering selection
+    if (sortOrder) {
+        sortOrder.addEventListener('change', function() {
+            const order = sortOrder.value;
+            const sortedRows = [...rows];
+            
+            sortedRows.sort((rowA, rowB) => {
+                if (order === 'rank-asc') {
+                    const rA = parseInt(rowA.cells[0].innerText);
+                    const rB = parseInt(rowB.cells[0].innerText);
+                    return rA - rB;
+                } else if (order === 'score-desc') {
+                    const sA = parseFloat(rowA.cells[2].innerText);
+                    const sB = parseFloat(rowB.cells[2].innerText);
+                    return sB - sA;
+                } else if (order === 'experience-desc') {
+                    const eA = parseFloat(rowA.cells[5].innerText);
+                    const eB = parseFloat(rowB.cells[5].innerText);
+                    return eB - eA;
+                }
+                return 0;
+            });
+            
+            sortedRows.forEach(row => tbody.appendChild(row));
+        });
+    }
+});
+</script>
+{% endblock %}

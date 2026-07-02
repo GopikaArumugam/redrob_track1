@@ -1,0 +1,69 @@
+# Redrob Hackathon — Submission Metadata
+
+# ============================================================================
+# Team identity
+# ============================================================================
+team_name: "GOPIKA A S"  # Used in leaderboard and announcements
+
+primary_contact:
+  name: "GOPIKA A S"
+  email: "gopika.arumugm@gmail.com"       # Used for all organizer communication
+  phone: "+91-8610980910"                 # Used for top-50 / top-10 outreach
+
+team_members:
+  - name: "GOPIKA A S"
+    email: "gopika.arumugm@gmail.com"
+    role: "ML & Backend Engineer"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "https://github.com/GopikaArumugam/redrob_track1"
+# Required. Must be reachable. 
+
+sandbox_link: "https://github.com/GopikaArumugam/redrob_track1"
+# Required. Working demo environment link.
+
+reproduce_command: "python rank.py --candidates ./dataandai/India_runs_data_and_ai_challenge/candidates.jsonl --out ./submission.csv"
+# The single command that produces submission.csv from candidates.jsonl.
+
+# ============================================================================
+# Compute environment
+# ============================================================================
+compute:
+  platform: "Local Windows Laptop"
+  cpu_cores: 8
+  ram_gb: 16
+  python_version: "3.10.0"
+  os: "Windows 11"
+  uses_gpu_for_inference: false                 
+  has_network_during_ranking: false             
+  pre_computation_required: false               
+  pre_computation_time_minutes: 0
+
+# ============================================================================
+# AI tools declaration
+# ============================================================================
+ai_tools_used:
+  - "Gemini"
+  - "Antigravity AI Agent"
+  - "Cursor"
+
+ai_usage_summary: |
+  Used Antigravity AI Agent powered by Google Gemini to assist with project scaffolding, Python module refactoring, CSS styling, and debug troubleshooting. No candidate data was sent to external APIs during execution.
+
+# ============================================================================
+# Approach summary
+# ============================================================================
+methodology_summary: |
+  A two-stage Retrieve-and-Rank pipeline optimized for CPU-only execution. Stage 1 applies fast heuristic pre-screening (eliminating honeypots/logical inconsistencies, consulting-firm histories, and inactive profiles with notice periods > 60 days or response rates < 50%), successfully pruning the search space by 98.8% in under 15 seconds. Stage 2 evaluates the remaining 1,124 candidate subset by generating 384-dimensional dense semantic vectors using a local all-MiniLM-L6-v2 Sentence-Transformer, computing cosine similarity, and calculating a weighted 9-signal score matrix (Semantic, Skills, Experience, Projects, Education, Certifications, Career Progression, Behavior, and Activity) modified by qualification penalties to sort the final top-100.
+
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true        # I have read submission_spec.md in full
+  code_is_original_work: true       # My code is my team's original work
+  no_collusion: true                # I have not coordinated my submission with other teams
+  honeypot_check_done: true         # Set true as we explicitly check for honeypots
+  reproduction_tested: true         # I have tested that my reproduce_command runs end-to-end
